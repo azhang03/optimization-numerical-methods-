@@ -177,4 +177,84 @@ def solve_single_constraint_lp(c, A_row, b_val, problem_type="min", debug=False)
 
     return solution, final_obj_value
 
+if __name__ == "__main__":
+    EPSILON_DISPLAY = 1e-9  # Threshold to highlight large errors
 
+    print("--- Example 1: Original Problem ---")
+    # minimize x1 + 2x2 + 3x3
+    # Subject to x1 + x2 + x3 = 1
+    c1 = [1.0, 2.0, 3.0]
+    A1_row = [1.0, 1.0, 1.0]
+    b1_val = 1.0
+    solution1, objective_value1 = solve_single_constraint_lp(c1, A1_row, b1_val, problem_type="min")
+
+    if solution1 is not None:
+        constraint_value = np.dot(A1_row, solution1)
+        constraint_error = constraint_value - b1_val
+
+        objective_value_check = np.dot(c1, solution1)
+        objective_error = objective_value_check - objective_value1
+
+        print("\n--- Example 1 Results ---")
+        print(f"Optimal solution (x1, x2, x3): {tuple(solution1)}")
+        print(f"Minimum objective value: {objective_value1:.10f}")
+        print(f"Constraint check: {constraint_value:.10f} (Expected: {b1_val:.10f})")
+        print(f"Constraint absolute error: {constraint_error:.2e}")
+        print(f"Objective check: {objective_value_check:.10f} (Expected: {objective_value1:.10f})")
+        print(f"Objective absolute error: {objective_error:.2e}")
+    else:
+        print("\n--- Example 1: No solution found ---")
+
+    print("\n" + "="*50 + "\n")
+
+    print("--- Example 2: Trying another problem ---")
+    # minimize 2x1 + 1x2
+    # subject to 3x1 + 2x2 = 6
+    c2 = [2.0, 1.0]
+    A2_row = [3.0, 2.0]
+    b2_val = 6.0
+    solution2, objective_value2 = solve_single_constraint_lp(c2, A2_row, b2_val, problem_type="min")
+
+    if solution2 is not None:
+        constraint_value = np.dot(A2_row, solution2)
+        constraint_error = constraint_value - b2_val
+
+        objective_value_check = np.dot(c2, solution2)
+        objective_error = objective_value_check - objective_value2
+
+        print("\n--- Example 2 Results ---")
+        print(f"Optimal solution (x1, x2): {tuple(solution2)}")
+        print(f"Minimum objective value: {objective_value2:.10f}")
+        print(f"Constraint check: {constraint_value:.10f} (Expected: {b2_val:.10f})")
+        print(f"Constraint absolute error: {constraint_error:.2e}")
+        print(f"Objective check: {objective_value_check:.10f} (Expected: {objective_value2:.10f})")
+        print(f"Objective absolute error: {objective_error:.2e}")
+    else:
+        print("\n--- Example 2: No solution found ---")
+
+    print("\n" + "="*50 + "\n")
+
+    print("--- Example 3: Try a max problem instead ---")
+    # Maximize 5x1 + 3x2
+    # subject to 1x1 + 2x2 = 10
+    c3 = [5.0, 3.0]
+    A3_row = [1.0, 2.0]
+    b3_val = 10.0
+    solution3, objective_value3 = solve_single_constraint_lp(c3, A3_row, b3_val, problem_type="max")
+
+    if solution3 is not None:
+        constraint_value = np.dot(A3_row, solution3)
+        constraint_error = constraint_value - b3_val
+
+        objective_value_check = np.dot(c3, solution3)
+        objective_error = objective_value_check - objective_value3
+
+        print("\n--- Example 3 Results ---")
+        print(f"Optimal solution (x1, x2): {tuple(solution3)}")
+        print(f"Maximum objective value: {objective_value3:.10f}")
+        print(f"Constraint check: {constraint_value:.10f} (Expected: {b3_val:.10f})")
+        print(f"Constraint absolute error: {constraint_error:.2e}")
+        print(f"Objective check: {objective_value_check:.10f} (Expected: {objective_value3:.10f})")
+        print(f"Objective absolute error: {objective_error:.2e}")
+    else:
+        print("\n--- Example 3: No solution found ---")
