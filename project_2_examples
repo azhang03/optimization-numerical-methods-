@@ -1,19 +1,19 @@
->> % Varying M Test
-% Pass in input values with a diagonal covariance matrix for cleaner results
+>> % Varying M Test (errors in separate test)
+% pass in input values with a diagonal covariance matrix for cleaner results
 Q = diag([0.01, 0.04, 0.02]);
 e = [0.1; 0.2; 0.15];                  
 m_values = linspace(min(e), max(e), 100);
-% Initialize vectors to keep track of weights and variances
+% initialize vectors to keep track of weights and variances
 weights = zeros(numel(e), numel(m_values));
 variances  = zeros(1, numel(m_values));
-% Run the script with each m value
+% iterate over m values
 for idx = 1:numel(m_values)
    m = m_values(idx);
    myalm     
    weights(:,idx) = x;
    variances(idx)   = x' * Q * x;
 end
-% Plot Weights vs m values
+% plot weights vs m values
 figure;
 plot(m_values, weights', '-');
 xlabel('Target return m');
@@ -21,7 +21,7 @@ ylabel('Weights x_i');
 legend('x1','x2','x3');
 grid on;
 title('Portfolio Weights vs m');
-% Display Results
+% display Results
 disp('Covariance Matrix Q:'), disp(Q)
 disp('Expected returns e:'), disp(e)
 disp('       m       var        x1        x2        x3')
@@ -138,41 +138,184 @@ Expected returns e:
     0.1980    0.0265   -0.2828    0.6768    0.6061
     0.1990    0.0271   -0.2953    0.6845    0.6107
     0.2000    0.0277   -0.3077    0.6923    0.6154
->> 
 
+_________________________________________________________________________________________________________________
+>> % Errors for varying M Test
+% pass in input values with a diagonal covariance matrix for cleaner results
+Q = diag([0.01, 0.04, 0.02]);
+e = [0.1; 0.2; 0.15];
+m_values = linspace(min(e), max(e), 100);
+% initialize vectors to keep track of weights, variances, and errors
+weights = zeros(numel(e), numel(m_values));
+variances = zeros(1, numel(m_values));
+ret_errs = zeros(1, numel(m_values));
+budget_errs = zeros(1, numel(m_values));
+obj_errs = zeros(1, numel(m_values));
+weight_errs = zeros(1, numel(m_values));
+% setup parameters for analytical solution
+A = ones(3,1)' * (Q \ ones(3,1));
+B = ones(3,1)' * (Q \ e);
+C = e' * (Q \ e);
+den = A * C - B^2;
+%run for all m values
+for idx = 1:numel(m_values);
+    m = m_values(idx);
+    % run my script and save solution
+    myalm
+    weights(:,idx)   = x;
+    variances(idx)   = x' * Q * x;
+    ret_errs(idx)    = abs(e' * x - m);
+    budget_errs(idx) = abs(sum(x) - 1);
+    % analytic minimal‐variance
+    var_th = (A * m^2 - 2 * B * m + C) / den;
+    obj_errs(idx) = abs(variances(idx) - var_th);
+    % compute analytic solution and record errors
+    weights_ana = ((C - B * m) / den) * (Q \ ones(3,1)) + ((A * m - B) / den) * (Q \ e);
+    weight_errs(idx) = norm(x - weights_ana, Inf);
+end
+% display error table
+T = table(m_values(:), variances(:), ret_errs(:), budget_errs(:), obj_errs(:), weight_errs(:), ...
+    'VariableNames', {'TargetReturn', 'Variance', 'ReturnErr', 'BudgetErr', 'ObjErr', 'WeightErr' } );
+disp(T);
+
+
+    TargetReturn    Variance     ReturnErr     BudgetErr       ObjErr      WeightErr 
+    ____________    _________    __________    __________    __________    __________
+
+          0.1       0.0092307    4.1876e-07    5.3911e-08     1.054e-07    5.2701e-06
+      0.10101       0.0089864    4.0404e-07    5.2016e-08    9.8122e-08    5.0849e-06
+      0.10202        0.008751    3.8932e-07    5.0121e-08    9.1104e-08    4.8996e-06
+      0.10303       0.0085243    3.7461e-07    4.8226e-08    8.4346e-08    4.7144e-06
+      0.10404       0.0083065    3.5989e-07    4.6332e-08    7.7848e-08    4.5292e-06
+      0.10505       0.0080974    3.4517e-07    4.4437e-08    7.1611e-08    4.3439e-06
+      0.10606       0.0078971    3.3045e-07    4.2542e-08    6.5634e-08    4.1587e-06
+      0.10707       0.0077056    3.1573e-07    4.0647e-08    5.9918e-08    3.9735e-06
+      0.10808       0.0075229    3.0101e-07    3.8752e-08    5.4462e-08    3.7883e-06
+      0.10909        0.007349     2.863e-07    3.6858e-08    4.9266e-08     3.603e-06
+       0.1101       0.0071838    2.7158e-07    3.4963e-08    4.4331e-08    3.4178e-06
+      0.11111       0.0070275    2.5686e-07    3.3068e-08    3.9656e-08    3.2326e-06
+      0.11212         0.00688    2.4214e-07    3.1173e-08    3.5242e-08    3.0474e-06
+      0.11313       0.0067412    2.2742e-07    2.9278e-08    3.1088e-08    2.8621e-06
+      0.11414       0.0066112    2.1271e-07    2.7384e-08    2.7194e-08    2.6769e-06
+      0.11515       0.0064901    1.9799e-07    2.5489e-08    2.3561e-08    2.4917e-06
+      0.11616       0.0063777    1.8327e-07    2.3594e-08    2.0188e-08    2.3064e-06
+      0.11717       0.0062741    1.6855e-07    2.1699e-08    1.7076e-08    2.1212e-06
+      0.11818       0.0061793    1.5383e-07    1.9804e-08    1.4224e-08     1.936e-06
+      0.11919       0.0060932    1.3912e-07     1.791e-08    1.1632e-08    1.7508e-06
+       0.1202        0.006016     1.244e-07    1.6015e-08    9.3012e-09    1.5655e-06
+      0.12121       0.0059476    1.0968e-07     1.412e-08    7.2305e-09    1.3803e-06
+      0.12222       0.0058879    9.4962e-08    1.2225e-08    5.4201e-09    1.1951e-06
+      0.12323       0.0058371    8.0243e-08     1.033e-08    3.8702e-09    1.0099e-06
+      0.12424        0.005795    6.5525e-08    8.4357e-09    2.5807e-09    8.2464e-07
+      0.12525       0.0057617    5.0807e-08    6.5409e-09    1.5516e-09    6.3941e-07
+      0.12626       0.0057372    8.8001e-07    1.1329e-07    1.9086e-08    1.1075e-05
+      0.12727       0.0057215    5.2112e-07    6.7089e-08    6.6928e-09    6.5583e-06
+      0.12828       0.0057146    1.6223e-07    2.0885e-08    6.4862e-10    2.0417e-06
+      0.12929       0.0057165    1.9666e-07    2.5318e-08    9.5316e-10     2.475e-06
+       0.1303       0.0057272    5.5555e-07    7.1522e-08    7.6064e-09    6.9916e-06
+      0.13131       0.0057466    9.1444e-07    1.1772e-07    2.0608e-08    1.1508e-05
+      0.13232       0.0057749    5.2219e-08    6.7227e-09     1.639e-09    6.5718e-07
+      0.13333        0.005812    6.6937e-08    8.6175e-09    2.6931e-09    8.4241e-07
+      0.13434       0.0058578    8.1656e-08    1.0512e-08    4.0076e-09    1.0276e-06
+      0.13535       0.0059124    9.6374e-08    1.2407e-08    5.5825e-09    1.2129e-06
+      0.13636       0.0059758    1.1109e-07    1.4302e-08    7.4178e-09    1.3981e-06
+      0.13737        0.006048    1.2581e-07    1.6197e-08    9.5136e-09    1.5833e-06
+      0.13838        0.006129    1.4053e-07    1.8091e-08     1.187e-08    1.7685e-06
+      0.13939       0.0062188    1.5525e-07    1.9986e-08    1.4486e-08    1.9538e-06
+       0.1404       0.0063174    1.6996e-07    2.1881e-08    1.7363e-08     2.139e-06
+      0.14141       0.0064248    1.8468e-07    2.3776e-08      2.05e-08    2.3242e-06
+      0.14242       0.0065409     1.994e-07    2.5671e-08    2.3898e-08    2.5094e-06
+      0.14343       0.0066659    2.1412e-07    2.7565e-08    2.7556e-08    2.6947e-06
+      0.14444       0.0067996    2.2884e-07     2.946e-08    3.1475e-08    2.8799e-06
+      0.14545       0.0069421    2.4355e-07    3.1355e-08    3.5654e-08    3.0651e-06
+      0.14646       0.0070934    2.5827e-07     3.325e-08    4.0093e-08    3.2504e-06
+      0.14747       0.0072535    2.7299e-07    3.5145e-08    4.4793e-08    3.4356e-06
+      0.14848       0.0074224    2.8771e-07    3.7039e-08    4.9753e-08    3.6208e-06
+      0.14949       0.0076001    3.0243e-07    3.8934e-08    5.4974e-08     3.806e-06
+      0.15051       0.0077866    3.1714e-07    4.0829e-08    6.0455e-08    3.9913e-06
+      0.15152       0.0079819    3.3186e-07    4.2724e-08    6.6196e-08    4.1765e-06
+      0.15253       0.0081859    3.4658e-07    4.4619e-08    7.2198e-08    4.3617e-06
+      0.15354       0.0083988     3.613e-07    4.6513e-08     7.846e-08    4.5469e-06
+      0.15455       0.0086204    3.7602e-07    4.8408e-08    8.4983e-08    4.7322e-06
+      0.15556       0.0088508    3.9074e-07    5.0303e-08    9.1766e-08    4.9174e-06
+      0.15657         0.00909    4.0545e-07    5.2198e-08    9.8809e-08    5.1026e-06
+      0.15758        0.009338    4.2017e-07    5.4093e-08    1.0611e-07    5.2878e-06
+      0.15859       0.0095948    4.3489e-07    5.5987e-08    1.1368e-07    5.4731e-06
+       0.1596       0.0098604    4.4961e-07    5.7882e-08     1.215e-07    5.6583e-06
+      0.16061        0.010135    4.6433e-07    5.9777e-08    1.2959e-07    5.8435e-06
+      0.16162        0.010418    4.7904e-07    6.1672e-08    1.3793e-07    6.0288e-06
+      0.16263         0.01071    4.9376e-07    6.3567e-08    1.4654e-07     6.214e-06
+      0.16364        0.011011    5.0848e-07    6.5461e-08     1.554e-07    6.3992e-06
+      0.16465         0.01132     5.232e-07    6.7356e-08    1.6453e-07    6.5844e-06
+      0.16566        0.011639    5.3792e-07    6.9251e-08    1.7392e-07    6.7697e-06
+      0.16667        0.011966    5.5263e-07    7.1146e-08    1.8357e-07    6.9549e-06
+      0.16768        0.012302    5.6735e-07    7.3041e-08    1.9347e-07    7.1401e-06
+      0.16869        0.012646    5.8207e-07    7.4935e-08    2.0364e-07    7.3253e-06
+       0.1697           0.013    5.9679e-07     7.683e-08    2.1407e-07    7.5106e-06
+      0.17071        0.013362    6.1151e-07    7.8725e-08    2.2476e-07    7.6958e-06
+      0.17172        0.013733    6.2622e-07     8.062e-08    2.3571e-07     7.881e-06
+      0.17273        0.014113    6.4094e-07    8.2515e-08    2.4692e-07    8.0663e-06
+      0.17374        0.014502    6.5566e-07    8.4409e-08    2.5839e-07    8.2515e-06
+      0.17475        0.014899    6.7038e-07    8.6304e-08    2.7012e-07    8.4367e-06
+      0.17576        0.015305     6.851e-07    8.8199e-08    2.8211e-07    8.6219e-06
+      0.17677         0.01572    6.9982e-07    9.0094e-08    2.9436e-07    8.8072e-06
+      0.17778        0.016144    7.1453e-07    9.1989e-08    3.0687e-07    8.9924e-06
+      0.17879        0.016577    7.2925e-07    9.3883e-08    3.1965e-07    9.1776e-06
+       0.1798        0.017018    7.4397e-07    9.5778e-08    3.3268e-07    9.3628e-06
+      0.18081        0.017468    7.5869e-07    9.7673e-08    3.4597e-07    9.5481e-06
+      0.18182        0.017927    7.7341e-07    9.9568e-08    3.5953e-07    9.7333e-06
+      0.18283        0.018395    7.8812e-07    1.0146e-07    3.7334e-07    9.9185e-06
+      0.18384        0.018871    8.0284e-07    1.0336e-07    3.8741e-07    1.0104e-05
+      0.18485        0.019357    8.1756e-07    1.0525e-07    4.0175e-07    1.0289e-05
+      0.18586        0.019851    8.3228e-07    1.0715e-07    4.1634e-07    1.0474e-05
+      0.18687        0.020354      8.47e-07    1.0904e-07     4.312e-07    1.0659e-05
+      0.18788        0.020866    8.6171e-07    1.1094e-07    4.4631e-07    1.0845e-05
+      0.18889        0.021386    8.7643e-07    1.1283e-07    4.6169e-07     1.103e-05
+       0.1899        0.021915    8.9115e-07    1.1473e-07    4.7733e-07    1.1215e-05
+      0.19091        0.022453    9.0587e-07    1.1662e-07    4.9322e-07      1.14e-05
+      0.19192           0.023    9.2059e-07    1.1852e-07    5.0938e-07    1.1586e-05
+      0.19293        0.023556     9.353e-07    1.2041e-07     5.258e-07    1.1771e-05
+      0.19394         0.02412    9.5002e-07    1.2231e-07    5.4248e-07    1.1956e-05
+      0.19495        0.024694    9.6474e-07     1.242e-07    5.5942e-07    1.2141e-05
+      0.19596        0.025276    9.7946e-07    1.2609e-07    5.7662e-07    1.2326e-05
+      0.19697        0.025866    9.9418e-07    1.2799e-07    5.9408e-07    1.2512e-05
+      0.19798        0.026467     2.112e-08     2.719e-09    1.2808e-08     2.658e-07
+      0.19899        0.027075    2.1429e-08    2.7587e-09    1.3184e-08    2.6968e-07
+          0.2        0.027692    2.1737e-08    2.7984e-09    1.3566e-08    2.7355e-07
+>>
 _________________________________________________________________________________________________________________
 >> % N Scalability Test
 n_values = [5, 10, 20, 40, 80, 100];
-% Initialize time and iteration tracking vectors
+% setup time and iteration tracking
 times = zeros(size(n_values));
 iterations = zeros(size(n_values));
-% Test N values
+% test n values
 for idx = 1:length(n_values)
     n = n_values(idx);
     fprintf('Running for n = %d\n', n);
-    % Seed so we can reproduce our results
+    % seed so we can reproduce our results
     rng(5);  
-    % Generate e and m
+    % generate e and m
     e = 0.1 + 0.05 * rand(n, 1);
     m = mean(e);
-    % Generate a random SPD coviariance Q
+    % generate a random SPD coviariance Q
     A = randn(n);                   
     Q = A * A';                     
     Q = Q + n * 1e-3 * eye(n); 
-    % Track times and iterations
+    % track times and iterations
     tic;
     evalc('myalm');
     times(idx) = toc;
     iterations(idx) = iteration;
 end
-% Iterations vs N plot
+% iterations vs N plot
 figure;
 plot(n_values, iterations, '-', 'LineWidth', 1.5);
 xlabel('Number of assets n');
 ylabel('Iterations to converge');
 title('Convergence Speed vs Portfolio Size');
 grid on;
-% Computational Time vs N plot
+% computational Time vs N plot
 figure;
 plot(n_values, times, '-', 'LineWidth', 1.5);
 xlabel('Number of assets n');
@@ -190,20 +333,20 @@ Running for n = 100
 
 _________________________________________________________________________________________________________________
 >> %Pertrubation Test
-% Initial problem input values
+% initial problem input values
 Q = [0.01  0.005; 0.005 0.04];
 e = [0.1;  0.2];
 m = 0.15;
-% Run script and save result     
+% run script and save result     
 myalm;
 x0 = x;
-% Perturbed problem input values
+% pertrube input values
 Q = [0.01  0.005; 0.005 0.04]+ 1e-4 * [0.1  -0.05; -0.05  0.2];
 e = [0.1;  0.2] + 1e-4 * [-0.05; 0.1];
-% Run script again and save result     
+% run script again and save result     
 myalm;
 x1 = x;
-%Compare both results
+% compare results
 fprintf('Initial x = [%.4f; %.4f]\n', x0(1), x0(2));
 fprintf('Perturbed x = [%.4f; %.4f]\n', x1(1), x1(2));
 fprintf('Max change in x = %.2e\n', max(abs(x1 - x0)));
@@ -281,15 +424,17 @@ Max change in x = 2.50e-05
 
 _________________________________________________________________________________________________________________
 >> % High Correlation Test
-% Input values with high correlation and identical expected returns, targeting each assets' return 
+% input values with high correlation and identical expected returns
 Q = [1.0 0.9 0.9; 0.9 1.0 0.9; 0.9 0.9 1.0];
 e = [0.1; 0.1; 0.1];
 m = 0.1;
-% Run Script
+% run script and find err
 myalm
-% Display results
-disp('Solution should be approximately [1/3;1/3;1/3]):')
+ideal = (1/3) * ones(size(x));
+err = max(abs(x - ideal));
+% display results
 disp(x)
+fprintf('Max absolute error vs. ideal: %.10e\n', err);
 Iter  1:
 return_err = 0.0000000000e+00, budget_err = 0.0000000000e+00, var = 9.3333333333e-01
 Iter  2:
@@ -322,20 +467,19 @@ Optimal weights:
 
 Return = 0.10000, Variance = 0.93333
 
-Solution should be approximately [1/3;1/3;1/3]):
     0.3333
     0.3333
     0.3333
 
+Max absolute error vs. ideal: 3.7772688810e-08
 >> 
 _________________________________________________________________________________________________________________
 >> % Simple Test against Analytic Solution
-% Enter input values for simple test with only two assets and a diagonal
-% covariance matrix
+% enter input values for simple test with only two assets and a diagonal covariance matrix
 Q = diag([0.01, 0.04]);
 e = [0.1; 0.2];
 m = 0.15;
-% Run Script
+% run Script
 myalm
 disp('Analytic solution: x = [0.5; 0.5]');
 disp('My solution:');
