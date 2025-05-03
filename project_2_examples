@@ -1,4 +1,4 @@
->> % Varying M Test (errors in separate test)
+>> % EXAMPLE 1 - Varying M Test (errors in separate test)
 % pass in input values with a diagonal covariance matrix for cleaner results
 Q = diag([0.01, 0.04, 0.02]);
 e = [0.1; 0.2; 0.15];                  
@@ -140,7 +140,7 @@ Expected returns e:
     0.2000    0.0277   -0.3077    0.6923    0.6154
 
 _________________________________________________________________________________________________________________
->> % Errors for varying M Test
+>> EXAMPLE 2 - % Errors for varying M Test
 % pass in input values with a diagonal covariance matrix for cleaner results
 Q = diag([0.01, 0.04, 0.02]);
 e = [0.1; 0.2; 0.15];
@@ -284,7 +284,7 @@ disp(T);
           0.2        0.027692    2.1737e-08    2.7984e-09    1.3566e-08    2.7355e-07
 >>
 _________________________________________________________________________________________________________________
->> % N Scalability Test
+>> EXAMPLE 3 - % N Scalability Test
 n_values = [5, 10, 20, 40, 80, 100];
 % setup time and iteration tracking
 times = zeros(size(n_values));
@@ -332,7 +332,7 @@ Running for n = 100
 >> 
 
 _________________________________________________________________________________________________________________
->> %Pertrubation Test
+>> EXAMPLE 4 - %Pertrubation Test
 % initial problem input values
 Q = [0.01  0.005; 0.005 0.04];
 e = [0.1;  0.2];
@@ -423,7 +423,7 @@ Max change in x = 2.50e-05
 >> 
 
 _________________________________________________________________________________________________________________
->> % High Correlation Test
+>> EXAMPLE 5 - % High Correlation Test
 % input values with high correlation and identical expected returns
 Q = [1.0 0.9 0.9; 0.9 1.0 0.9; 0.9 0.9 1.0];
 e = [0.1; 0.1; 0.1];
@@ -474,7 +474,7 @@ Return = 0.10000, Variance = 0.93333
 Max absolute error vs. ideal: 3.7772688810e-08
 >> 
 _________________________________________________________________________________________________________________
->> % Simple Test against Analytic Solution
+>> EXAMPLE 6 - % Simple Test against Analytic Solution
 % enter input values for simple test with only two assets and a diagonal covariance matrix
 Q = diag([0.01, 0.04]);
 e = [0.1; 0.2];
